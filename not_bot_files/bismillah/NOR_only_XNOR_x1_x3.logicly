@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<circuit name="NOR_only_XNOR_x1_x3">
+  <components>
+    <component type="input" name="x1" x="0" y="0"/>
+    <component type="input" name="x3" x="0" y="80"/>
+    <!-- NOR gates -->
+    <component type="nor" name="g1_x1_not" x="160" y="-40"/>
+    <component type="nor" name="g2_x3_not" x="160" y="40"/>
+    <component type="nor" name="g3_and_x1x3" x="340" y="0"/>
+    <component type="nor" name="g4_x1x3_not" x="340" y="140"/>
+    <component type="nor" name="g5_notf" x="520" y="40"/>
+    <component type="nor" name="g6_f" x="700" y="40"/>
+    <component type="light" name="F_out" x="820" y="40"/>
+  </components>
+  <connections>
+    <!-- g1 = NOR(x1,x1) -> x1' -->
+    <wire from="x1.out" to="g1_x1_not.in1"/>
+    <wire from="x1.out" to="g1_x1_not.in2"/>
+    <!-- g2 = NOR(x3,x3) -> x3' -->
+    <wire from="x3.out" to="g2_x3_not.in1"/>
+    <wire from="x3.out" to="g2_x3_not.in2"/>
+    <!-- g3 = NOR(g1, g2) -> x1 x3 -->
+    <wire from="g1_x1_not.out" to="g3_and_x1x3.in1"/>
+    <wire from="g2_x3_not.out" to="g3_and_x1x3.in2"/>
+    <!-- g4 = NOR(x1, x3) -> x1' x3' -->
+    <wire from="x1.out" to="g4_x1x3_not.in1"/>
+    <wire from="x3.out" to="g4_x1x3_not.in2"/>
+    <!-- g5 = NOR(g3, g4) -> NOT(f) -->
+    <wire from="g3_and_x1x3.out" to="g5_notf.in1"/>
+    <wire from="g4_x1x3_not.out" to="g5_notf.in2"/>
+    <!-- g6 = NOR(g5, g5) -> f -->
+    <wire from="g5_notf.out" to="g6_f.in1"/>
+    <wire from="g5_notf.out" to="g6_f.in2"/>
+    <!-- output light -->
+    <wire from="g6_f.out" to="F_out.in"/>
+  </connections>
+</circuit>

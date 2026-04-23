@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<circuit name="OR-AND Logic">
+  <components>
+    <component type="input" name="A" x="0" y="0"/>
+    <component type="input" name="B" x="0" y="80"/>
+    <component type="not" name="NOT A" x="100" y="-40"/>
+    <component type="not" name="NOT B" x="100" y="40"/>
+    <component type="or" name="OR1 (A+B)" x="200" y="0"/>
+    <component type="or" name="OR2 (A'+B')" x="200" y="80"/>
+    <component type="and" name="AND" x="300" y="40"/>
+    <component type="light" name="Output F" x="400" y="40"/>
+  </components>
+  <connections>
+    <wire from="A.out" to="OR1.in1"/>
+    <wire from="B.out" to="OR1.in2"/>
+    <wire from="A.out" to="NOT A.in"/>
+    <wire from="B.out" to="NOT B.in"/>
+    <wire from="NOT A.out" to="OR2.in1"/>
+    <wire from="NOT B.out" to="OR2.in2"/>
+    <wire from="OR1.out" to="AND.in1"/>
+    <wire from="OR2.out" to="AND.in2"/>
+    <wire from="AND.out" to="Output F.in"/>
+  </connections>
+</circuit>

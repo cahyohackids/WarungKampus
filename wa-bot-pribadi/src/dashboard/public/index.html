@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WA Bot Dashboard — Control Panel</title>
+    <meta name="description" content="Dashboard untuk memantau WhatsApp Bot Pribadi secara real-time">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        dark: { 900: '#0a0a0f', 800: '#111118', 700: '#1a1a24', 600: '#232330' },
+                        accent: { 400: '#818cf8', 500: '#6366f1', 600: '#4f46e5' },
+                        success: { 400: '#34d399', 500: '#10b981' },
+                        danger: { 400: '#f87171', 500: '#ef4444' },
+                        warn: { 400: '#fbbf24', 500: '#f59e0b' },
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #111118; }
+        ::-webkit-scrollbar-thumb { background: #6366f1; border-radius: 3px; }
+
+        @keyframes pulse-dot {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.5; }
+        }
+        .pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in { animation: fadeInUp 0.5s ease forwards; }
+        .d1 { animation-delay: 0.05s; opacity: 0; }
+        .d2 { animation-delay: 0.1s; opacity: 0; }
+        .d3 { animation-delay: 0.15s; opacity: 0; }
+        .d4 { animation-delay: 0.2s; opacity: 0; }
+        .d5 { animation-delay: 0.25s; opacity: 0; }
+        .d6 { animation-delay: 0.3s; opacity: 0; }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        .shimmer {
+            background: linear-gradient(90deg, #1a1a24 25%, #23233a 50%, #1a1a24 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+
+        .glass {
+            background: rgba(17, 17, 24, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 1rem;
+        }
+        .glass-sm {
+            background: rgba(17, 17, 24, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 0.75rem;
+        }
+
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(99,102,241,0.1); }
+
+        .stat-gradient {
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-gradient::after {
+            content: '';
+            position: absolute;
+            top: 0; right: 0;
+            width: 100px; height: 100px;
+            border-radius: 50%;
+            filter: blur(40px);
+            opacity: 0.15;
+        }
+        .stat-gradient.purple::after { background: #8b5cf6; }
+        .stat-gradient.green::after { background: #10b981; }
+        .stat-gradient.blue::after { background: #3b82f6; }
+        .stat-gradient.amber::after { background: #f59e0b; }
+        .stat-gradient.rose::after { background: #f43f5e; }
+        .stat-gradient.cyan::after { background: #06b6d4; }
+
+        .progress-bar {
+            background: rgba(99,102,241,0.1);
+            border-radius: 999px;
+            overflow: hidden;
+            height: 6px;
+        }
+        .progress-fill {
+            height: 100%;
+            border-radius: 999px;
+            transition: width 0.8s ease;
+        }
+
+        .bg-grid {
+            background-image:
+                radial-gradient(circle at 15% 50%, rgba(99,102,241,0.06) 0%, transparent 50%),
+                radial-gradient(circle at 85% 20%, rgba(139,92,246,0.04) 0%, transparent 50%),
+                radial-gradient(circle at 50% 90%, rgba(6,182,212,0.03) 0%, transparent 50%);
+        }
+
+        .cmd-badge { transition: all 0.2s; cursor: default; }
+        .cmd-badge:hover { transform: scale(1.02); }
+
+        @keyframes countUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .count-up { animation: countUp 0.3s ease; }
+
+        .todo-item { transition: all 0.2s ease; }
+        .todo-item:hover { background: rgba(99,102,241,0.06); padding-left: 1.25rem; }
+
+        .deadline-urgent { border-left: 3px solid #ef4444; }
+        .deadline-soon { border-left: 3px solid #f59e0b; }
+        .deadline-ok { border-left: 3px solid #10b981; }
+    </style>
+</head>
+<body class="bg-dark-900 text-white min-h-screen bg-grid">
+
+    <!-- Header -->
+    <header class="fixed top-0 w-full z-50 backdrop-blur-xl bg-dark-900/80 border-b border-white/5">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-accent-500 to-purple-600 flex items-center justify-center text-base shadow-lg shadow-accent-500/20">🤖</div>
+                <div>
+                    <h1 class="text-base font-bold tracking-tight">WA Bot Dashboard</h1>
+                    <p class="text-[10px] text-gray-500 hidden sm:block">Real-time monitoring & analytics</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <div id="clock" class="text-xs text-gray-400 font-mono hidden sm:block"></div>
+                <div id="statusBadge" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-dark-700 border border-white/10">
+                    <span class="w-1.5 h-1.5 rounded-full bg-gray-500"></span>Loading...
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 pt-24 pb-12">
+
+        <!-- Row 1: Main Stat Cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+            <div class="fade-in d1 glass card-hover p-4 stat-gradient green">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-[10px] font-semibold text-gray-500 uppercase tracking-widest">Status</span>
+                    <div id="statusIcon" class="text-base">⏳</div>
+                </div>
+                <p id="statusText" class="text-lg font-extrabold text-gray-300">...</p>
+                <p id="statusPhone" class="text-[10px] text-gray-600 mt-0.5 truncate">—</p>
+            </div>
+            <div class="fade-in d2 glass card-hover p-4 stat-gradient purple">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-[10px] font-semibold text-gray-500 uppercase tracking-widest">Uptime</span>
+                    <div class="text-base">⏱️</div>
+                </div>
+                <p id="uptimeText" class="text-lg font-extrabold text-gray-300">—</p>
+                <p class="text-[10px] text-gray-600 mt-0.5">Waktu aktif</p>
+            </div>
+            <div class="fade-in d3 glass card-hover p-4 stat-gradient blue">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-[10px] font-semibold text-gray-500 uppercase tracking-widest">Memory</span>
+                    <div class="text-base">🧠</div>
+                </div>
+                <p id="memText" class="text-lg font-extrabold text-gray-300">—</p>
+                <div id="memBar" class="progress-bar mt-2">
+                    <div class="progress-fill bg-gradient-to-r from-blue-500 to-cyan-400" style="width:0%"></div>
+                </div>
+            </div>
+            <div class="fade-in d4 glass card-hover p-4 stat-gradient amber">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-[10px] font-semibold text-gray-500 uppercase tracking-widest">Pesan</span>
+                    <div class="text-base">💬</div>
+                </div>
+                <p id="msgTotal" class="text-lg font-extrabold text-gray-300">0</p>
+                <p id="msgToday" class="text-[10px] text-gray-600 mt-0.5">Hari ini: 0</p>
+            </div>
+            <div class="fade-in d5 glass card-hover p-4 stat-gradient rose">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-[10px] font-semibold text-gray-500 uppercase tracking-widest">Commands</span>
+                    <div class="text-base">⚡</div>
+                </div>
+                <p id="cmdTotal" class="text-lg font-extrabold text-gray-300">0</p>
+                <p id="cmdCount" class="text-[10px] text-gray-600 mt-0.5">—</p>
+            </div>
+            <div class="fade-in d6 glass card-hover p-4 stat-gradient cyan">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-[10px] font-semibold text-gray-500 uppercase tracking-widest">Data</span>
+                    <div class="text-base">📊</div>
+                </div>
+                <p id="dataTotal" class="text-lg font-extrabold text-gray-300">0</p>
+                <p id="dataSub" class="text-[10px] text-gray-600 mt-0.5">item tersimpan</p>
+            </div>
+        </div>
+
+        <!-- Row 2: Mini Data Cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+            <div class="fade-in d2 glass-sm p-3 flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg bg-emerald-500/10 flex items-center justify-center text-base flex-shrink-0">📝</div>
+                <div>
+                    <p id="todoStat" class="text-sm font-bold">0</p>
+                    <p class="text-[10px] text-gray-500">Tugas</p>
+                </div>
+            </div>
+            <div class="fade-in d3 glass-sm p-3 flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg bg-red-500/10 flex items-center justify-center text-base flex-shrink-0">⏰</div>
+                <div>
+                    <p id="deadlineStat" class="text-sm font-bold">0</p>
+                    <p class="text-[10px] text-gray-500">Deadline</p>
+                </div>
+            </div>
+            <div class="fade-in d4 glass-sm p-3 flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg bg-violet-500/10 flex items-center justify-center text-base flex-shrink-0">📒</div>
+                <div>
+                    <p id="notesStat" class="text-sm font-bold">0</p>
+                    <p class="text-[10px] text-gray-500">Catatan</p>
+                </div>
+            </div>
+            <div class="fade-in d5 glass-sm p-3 flex items-center gap-3">
+                <div class="w-9 h-9 rounded-lg bg-blue-500/10 flex items-center justify-center text-base flex-shrink-0">📅</div>
+                <div>
+                    <p id="scheduleStat" class="text-sm font-bold">0</p>
+                    <p class="text-[10px] text-gray-500">Jadwal</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 3: Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-6">
+
+            <!-- Todo List (5 cols) -->
+            <div class="lg:col-span-5 fade-in d2">
+                <div class="glass p-5 h-full">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex items-center justify-center text-sm">📝</div>
+                            <div>
+                                <h2 class="text-sm font-bold">Daftar Tugas</h2>
+                                <p class="text-[10px] text-gray-500">To-do list aktif</p>
+                            </div>
+                        </div>
+                        <button onclick="refreshTodos()" class="px-2.5 py-1 text-[10px] font-medium rounded-lg bg-accent-500/10 text-accent-400 hover:bg-accent-500/20 transition-all">↻ Refresh</button>
+                    </div>
+                    <div id="todoList" class="space-y-1.5 max-h-[280px] overflow-y-auto pr-1">
+                        <div class="shimmer h-10 rounded-lg"></div>
+                        <div class="shimmer h-10 rounded-lg"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upcoming Deadlines (3 cols) -->
+            <div class="lg:col-span-3 fade-in d3">
+                <div class="glass p-5 h-full">
+                    <div class="flex items-center gap-2.5 mb-4">
+                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-red-500/20 to-orange-500/20 flex items-center justify-center text-sm">⏰</div>
+                        <div>
+                            <h2 class="text-sm font-bold">Deadline</h2>
+                            <p class="text-[10px] text-gray-500">7 hari kedepan</p>
+                        </div>
+                    </div>
+                    <div id="deadlineList" class="space-y-2 max-h-[280px] overflow-y-auto pr-1">
+                        <div class="shimmer h-14 rounded-lg"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Today Schedule + Top Commands (4 cols) -->
+            <div class="lg:col-span-4 flex flex-col gap-4 fade-in d4">
+                <!-- Today Schedule -->
+                <div class="glass p-5">
+                    <div class="flex items-center gap-2.5 mb-4">
+                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500/20 to-indigo-500/20 flex items-center justify-center text-sm">📅</div>
+                        <div>
+                            <h2 class="text-sm font-bold">Jadwal Hari Ini</h2>
+                            <p id="todayDay" class="text-[10px] text-gray-500">—</p>
+                        </div>
+                    </div>
+                    <div id="scheduleList" class="space-y-1.5 max-h-[120px] overflow-y-auto">
+                        <div class="shimmer h-8 rounded-lg"></div>
+                    </div>
+                </div>
+                <!-- Top Commands -->
+                <div class="glass p-5 flex-1">
+                    <div class="flex items-center gap-2.5 mb-4">
+                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500/20 to-yellow-500/20 flex items-center justify-center text-sm">🏆</div>
+                        <div>
+                            <h2 class="text-sm font-bold">Top Commands</h2>
+                            <p class="text-[10px] text-gray-500">Paling sering dipakai</p>
+                        </div>
+                    </div>
+                    <div id="topCmdList" class="space-y-1.5 max-h-[120px] overflow-y-auto">
+                        <p class="text-[10px] text-gray-600 text-center py-4">Belum ada data</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 4: All Commands -->
+        <div class="fade-in d5">
+            <div class="glass p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500/20 to-purple-500/20 flex items-center justify-center text-sm">⚡</div>
+                        <div>
+                            <h2 class="text-sm font-bold">Semua Commands</h2>
+                            <p id="cmdListCount" class="text-[10px] text-gray-500">—</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="filterCmds('all')" class="cmd-filter active px-2 py-0.5 text-[10px] rounded-md bg-accent-500/20 text-accent-400" data-filter="all">Semua</button>
+                        <button onclick="filterCmds('public')" class="cmd-filter px-2 py-0.5 text-[10px] rounded-md bg-dark-700 text-gray-500 hover:text-gray-300" data-filter="public">Public</button>
+                        <button onclick="filterCmds('owner')" class="cmd-filter px-2 py-0.5 text-[10px] rounded-md bg-dark-700 text-gray-500 hover:text-gray-300" data-filter="owner">Owner</button>
+                    </div>
+                </div>
+                <div id="commandsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
+                    <div class="shimmer h-12 rounded-lg"></div>
+                    <div class="shimmer h-12 rounded-lg"></div>
+                    <div class="shimmer h-12 rounded-lg"></div>
+                    <div class="shimmer h-12 rounded-lg"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/5 py-4">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-1 text-[10px] text-gray-600">
+            <span>🤖 WA Bot Dashboard v2.0 — Built with ❤️</span>
+            <span>Auto-refresh setiap 5 detik</span>
+        </div>
+    </footer>
+
+    <script>
+        let allCommands = [];
+
+        // Clock
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').textContent = now.toLocaleTimeString('id-ID', {
+                hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'Asia/Jakarta'
+            }) + ' WIB';
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Fetch Status
+        async function refreshStatus() {
+            try {
+                const res = await fetch('/api/status');
+                const d = await res.json();
+                const ok = d.status === 'connected';
+
+                const badge = document.getElementById('statusBadge');
+                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full ${ok?'bg-success-400 pulse-dot':'bg-danger-400'}"></span>${ok?'Connected':'Offline'}`;
+                badge.className = `flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold border ${ok?'bg-success-400/10 border-success-400/20 text-success-400':'bg-danger-400/10 border-danger-400/20 text-danger-400'}`;
+
+                document.getElementById('statusText').textContent = ok ? 'Connected' : 'Offline';
+                document.getElementById('statusText').className = `text-lg font-extrabold ${ok?'text-success-400':'text-danger-400'}`;
+                document.getElementById('statusIcon').textContent = ok ? '🟢' : '🔴';
+                document.getElementById('statusPhone').textContent = d.info ? `+${d.info.number}` : '—';
+
+                const {hours:h,minutes:m,seconds:s} = d.uptime;
+                document.getElementById('uptimeText').textContent = `${h}j ${m}m ${s}d`;
+
+                document.getElementById('memText').textContent = d.memory.used;
+                document.getElementById('memBar').querySelector('.progress-fill').style.width = d.memory.percent + '%';
+
+            } catch(e) {
+                document.getElementById('statusText').textContent = 'Error';
+            }
+        }
+
+        // Fetch Stats
+        async function refreshStats() {
+            try {
+                const res = await fetch('/api/stats');
+                const d = await res.json();
+
+                // Message stats
+                document.getElementById('msgTotal').textContent = d.messages.total.toLocaleString();
+                document.getElementById('msgToday').textContent = `Hari ini: ${d.messages.today}`;
+                document.getElementById('cmdTotal').textContent = d.messages.commands.toLocaleString();
+
+                // Data counts
+                const totalData = d.data.todos + d.data.deadlines + d.data.notes + d.data.schedules;
+                document.getElementById('dataTotal').textContent = totalData;
+                document.getElementById('todoStat').textContent = d.data.todos;
+                document.getElementById('deadlineStat').textContent = d.data.deadlines;
+                document.getElementById('notesStat').textContent = d.data.notes;
+                document.getElementById('scheduleStat').textContent = d.data.schedules;
+
+                // Today's schedule
+                const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+                document.getElementById('todayDay').textContent = days[new Date().getDay()];
+                const schEl = document.getElementById('scheduleList');
+                if (d.todaySchedule.length === 0) {
+                    schEl.innerHTML = `<p class="text-[10px] text-gray-600 text-center py-3">🎉 Tidak ada jadwal hari ini</p>`;
+                } else {
+                    schEl.innerHTML = d.todaySchedule.map(s => `
+                        <div class="flex items-center gap-2 p-2 rounded-lg bg-dark-700/30">
+                            <span class="text-[10px] font-mono text-blue-400 font-bold w-12">${esc(s.jam)}</span>
+                            <span class="text-[10px] text-gray-300 flex-1 truncate">${esc(s.matkul)}</span>
+                            <span class="text-[9px] text-gray-600">${esc(s.ruang)}</span>
+                        </div>
+                    `).join('');
+                }
+
+                // Upcoming deadlines
+                const dlEl = document.getElementById('deadlineList');
+                if (d.upcomingDeadlines.length === 0) {
+                    dlEl.innerHTML = `<p class="text-[10px] text-gray-600 text-center py-6">☕ Tidak ada deadline mendekat</p>`;
+                } else {
+                    dlEl.innerHTML = d.upcomingDeadlines.map(dl => {
+                        const cls = dl.daysLeft <= 1 ? 'deadline-urgent' : dl.daysLeft <= 3 ? 'deadline-soon' : 'deadline-ok';
+                        const badge = dl.daysLeft === 0 ? 'HARI INI' : dl.daysLeft === 1 ? 'BESOK' : `${dl.daysLeft} hari`;
+                        const badgeCls = dl.daysLeft <= 1 ? 'bg-red-500/15 text-red-400' : dl.daysLeft <= 3 ? 'bg-amber-500/15 text-amber-400' : 'bg-green-500/15 text-green-400';
+                        return `
+                            <div class="${cls} p-2.5 rounded-lg bg-dark-700/30 pl-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] font-bold text-gray-200 truncate">${esc(dl.matkul)}</span>
+                                    <span class="text-[9px] px-1.5 py-0.5 rounded-full font-bold ${badgeCls}">${badge}</span>
+                                </div>
+                                <p class="text-[10px] text-gray-500 truncate mt-0.5">${esc(dl.task)}</p>
+                            </div>`;
+                    }).join('');
+                }
+
+                // Top commands chart
+                const tcEl = document.getElementById('topCmdList');
+                if (d.topCommands.length === 0) {
+                    tcEl.innerHTML = `<p class="text-[10px] text-gray-600 text-center py-4">Belum ada data penggunaan</p>`;
+                } else {
+                    const max = d.topCommands[0].count;
+                    tcEl.innerHTML = d.topCommands.map(c => `
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] font-mono text-accent-400 w-16 truncate font-bold">!${c.name}</span>
+                            <div class="flex-1 progress-bar">
+                                <div class="progress-fill bg-gradient-to-r from-accent-500 to-purple-500" style="width:${(c.count/max*100).toFixed(0)}%"></div>
+                            </div>
+                            <span class="text-[10px] text-gray-500 w-6 text-right">${c.count}</span>
+                        </div>
+                    `).join('');
+                }
+
+                document.getElementById('cmdCount').textContent = `${d.topCommands.length} command dipakai`;
+
+            } catch(e) {}
+        }
+
+        // Fetch Todos
+        async function refreshTodos() {
+            try {
+                const res = await fetch('/api/todos');
+                const d = await res.json();
+                const el = document.getElementById('todoList');
+
+                if (d.count === 0) {
+                    el.innerHTML = `<div class="text-center py-8"><div class="text-3xl mb-2">☕</div><p class="text-[10px] text-gray-500">Tidak ada tugas</p></div>`;
+                    return;
+                }
+
+                el.innerHTML = d.items.map(item => `
+                    <div class="todo-item flex items-center gap-3 p-2.5 rounded-lg bg-dark-700/30 border border-white/[0.03]">
+                        <div class="w-6 h-6 rounded-md bg-accent-500/10 flex items-center justify-center text-accent-400 text-[10px] font-bold flex-shrink-0">${item.id}</div>
+                        <span class="text-[11px] text-gray-300">${esc(item.text)}</span>
+                    </div>
+                `).join('');
+            } catch(e) {
+                document.getElementById('todoList').innerHTML = `<p class="text-center py-4 text-[10px] text-gray-500">Gagal memuat</p>`;
+            }
+        }
+
+        // Fetch Commands
+        async function refreshCommands() {
+            try {
+                const res = await fetch('/api/commands');
+                const d = await res.json();
+                allCommands = d.commands;
+                document.getElementById('cmdListCount').textContent = `${d.count} perintah tersedia`;
+                renderCommands('all');
+            } catch(e) {}
+        }
+
+        function renderCommands(filter) {
+            const el = document.getElementById('commandsGrid');
+            let cmds = allCommands;
+            if (filter === 'public') cmds = allCommands.filter(c => !c.ownerOnly);
+            if (filter === 'owner') cmds = allCommands.filter(c => c.ownerOnly);
+
+            el.innerHTML = cmds.map(cmd => `
+                <div class="cmd-badge flex items-center gap-2.5 p-2.5 rounded-lg bg-dark-700/30 border border-white/[0.03] hover:border-accent-500/20">
+                    <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold ${cmd.ownerOnly ? 'bg-amber-500/10 text-amber-400' : 'bg-accent-500/10 text-accent-400'}">!${cmd.name}</span>
+                    <span class="text-[10px] text-gray-500 truncate flex-1">${esc(cmd.description)}</span>
+                    ${cmd.ownerOnly ? '<span class="text-[9px]">🔐</span>' : ''}
+                </div>
+            `).join('');
+        }
+
+        function filterCmds(filter) {
+            document.querySelectorAll('.cmd-filter').forEach(b => {
+                b.className = `cmd-filter px-2 py-0.5 text-[10px] rounded-md ${b.dataset.filter === filter ? 'bg-accent-500/20 text-accent-400' : 'bg-dark-700 text-gray-500 hover:text-gray-300'}`;
+            });
+            renderCommands(filter);
+        }
+
+        function esc(text) {
+            const d = document.createElement('div');
+            d.textContent = text;
+            return d.innerHTML;
+        }
+
+        // Init
+        refreshStatus();
+        refreshStats();
+        refreshTodos();
+        refreshCommands();
+
+        setInterval(() => { refreshStatus(); refreshStats(); refreshTodos(); }, 5000);
+    </script>
+</body>
+</html>
